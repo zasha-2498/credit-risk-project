@@ -1,0 +1,3 @@
+SELECT loan_status, COUNT(*) AS count
+FROM `credit_risk.raw_credit_risk`
+GROUP BY loan_status;
