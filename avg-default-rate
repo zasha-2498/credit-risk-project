@@ -1,0 +1,3 @@
+SELECT 
+  AVG(default_flag) AS default_rate
+FROM `credit_risk.model_ready_credit_risk`;
