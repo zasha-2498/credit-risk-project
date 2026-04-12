@@ -1,0 +1,6 @@
+SELECT 
+  cb_person_cred_hist_length,
+  AVG(default_flag) AS default_rate
+FROM `credit_risk.model_ready_credit_risk`
+GROUP BY cb_person_cred_hist_length
+ORDER BY cb_person_cred_hist_length;
