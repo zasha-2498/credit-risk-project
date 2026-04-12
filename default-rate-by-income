@@ -1,0 +1,10 @@
+SELECT
+  CASE
+    WHEN person_income < 20000 THEN 'Low income'
+    WHEN person_income BETWEEN 20000 AND 50000 THEN 'Mid income'
+    ELSE 'High income'
+  END AS income_band,
+  AVG(default_flag) AS default_rate
+FROM `credit_risk.model_ready_credit_risk`
+GROUP BY income_band
+ORDER BY default_rate DESC;
