@@ -1,0 +1,2 @@
+SELECT COUNT(*) AS total_rows
+FROM `credit_risk.raw_credit_risk`;
