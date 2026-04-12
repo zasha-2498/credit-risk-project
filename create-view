@@ -1,5 +1,0 @@
-CREATE OR REPLACE VIEW `credit_risk.model_ready_credit_risk` AS
-SELECT
-  *,
-  loan_status AS default_flag
-FROM `credit_risk.raw_credit_risk`;
