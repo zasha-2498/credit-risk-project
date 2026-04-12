@@ -1,0 +1,4 @@
+SELECT loan_intent, AVG(default_flag) AS default_rate
+FROM `credit_risk.model_ready_credit_risk`
+GROUP BY loan_intent
+ORDER BY default_rate DESC;
