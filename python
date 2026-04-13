@@ -1,0 +1,91 @@
+!pip install google-cloud-bigquery
+
+from google.colab import auth
+auth.authenticate_user()
+
+from google.cloud import bigquery
+import pandas as pd
+
+client = bigquery.Client(project="credit-risk-project-493113")
+
+query = """
+SELECT *
+FROM `credit_risk.model_ready_credit_risk`
+"""
+
+df = client.query(query).to_dataframe()
+df.head()
+
+
+
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+
+numeric_features = [
+    "person_age",
+    "person_income",
+    "person_emp_length",
+    "loan_amnt",
+    "loan_int_rate",
+    "loan_percent_income",
+    "cb_person_cred_hist_length"
+]
+
+categorical_features = [
+    "person_home_ownership",
+    "loan_intent",
+    "loan_grade",
+    "cb_person_default_on_file"
+]
+
+numeric_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="median"))
+])
+
+categorical_transformer = Pipeline(steps=[
+    ("imputer", SimpleImputer(strategy="most_frequent")),
+    ("encoder", OneHotEncoder(handle_unknown="ignore"))
+])
+
+preprocess = ColumnTransformer(
+    transformers=[
+        ("num", numeric_transformer, numeric_features),
+        ("cat", categorical_transformer, categorical_features),
+    ]
+)
+
+from sklearn.linear_model import LogisticRegression
+
+model = Pipeline(
+    steps=[
+        ("preprocess", preprocess),
+        ("clf", LogisticRegression(max_iter=1000))
+    ]
+)
+
+model.fit(X_train, y_train)
+
+from sklearn.metrics import roc_auc_score, classification_report
+
+y_pred = model.predict(X_test)
+y_pred_proba = model.predict_proba(X_test)[:, 1]
+
+print("ROC-AUC:", roc_auc_score(y_test, y_pred_proba))
+print(classification_report(y_test, y_pred))
+
+df["predicted_default_prob"] = model.predict_proba(df)[:, 1]
+
+df["risk_band"] = pd.cut(
+    df["predicted_default_prob"],
+    bins=[0, 0.1, 0.3, 1],
+    labels=["Low", "Medium", "High"]
+)
+
+table_id = "credit-risk-project-493113.credit_risk.scored_credit_risk"
+
+job = client.load_table_from_dataframe(df, table_id)
+job.result()
+
+print("Uploaded scored table to BigQuery!")
